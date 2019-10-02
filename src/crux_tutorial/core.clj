@@ -268,6 +268,148 @@
  [[:crux.tx/put
    (assoc manifest :badges ["SETUP" "PUT" "DATALOG-QUERIES" "BITEMP"])]])
 
+(def data
+  [{:crux.db/id :gold-harmony
+    :company-name "Gold Harmony"
+    :seller? true
+    :buyer? false
+    :units/Au 10211
+    :credits 51}
+
+   {:crux.db/id :tombaugh-resources
+    :company-name "Tombaugh Resources Ltd."
+    :seller? true
+    :buyer? false
+    :units/Pu 50
+    :units/N 3
+    :units/CH4 92
+    :credits 51}
+
+   {:crux.db/id :encompass-trade
+    :company-name "Encompass Trade"
+    :seller? true
+    :buyer? true
+    :units/Au 10
+    :units/Pu 5
+    :units/CH4 211
+    :credits 1002}
+
+   {:crux.db/id :blue-energy
+    :seller? false
+    :buyer? true
+    :company-name "Blue Energy"
+    :credits 1000}])
+
+(easy-ingest crux data)
+
+(defn stock-check
+  [company-id item]
+  {:result (crux/q (crux/db crux)
+                   {:find '[name funds stock]
+                    :where ['[e :company-name name]
+                            '[e :credits funds]
+                            ['e item 'stock]]
+                    :args [{'e company-id}]})
+   :item item})
+
+(defn format-stock-check
+  [{:keys [result item] :as stock-check}]
+  (for [[name funds commod] result]
+    (str "Name: " name ", Funds: " funds ", " item " " commod)))
+
+(crux/submit-tx
+ crux
+ [[:crux.tx/cas
+   ;; Old doc
+   {:crux.db/id :blue-energy
+    :seller? false
+    :buyer? true
+    :company-name "Blue Energy"
+    :credits 1000}
+   ;; New doc
+   {:crux.db/id :blue-energy
+    :seller? false
+    :buyer? true
+    :company-name "Blue Energy"
+    :credits 900
+    :units/CH4 10}]
+
+  [:crux.tx/cas
+   ;; Old doc
+   {:crux.db/id :tombaugh-resources
+    :company-name "Tombaugh Resources Ltd."
+    :seller? true
+    :buyer? false
+    :units/Pu 50
+    :units/N 3
+    :units/CH4 92
+    :credits 51}
+   ;; New doc
+   {:crux.db/id :tombaugh-resources
+    :company-name "Tombaugh Resources Ltd."
+    :seller? true
+    :buyer? false
+    :units/Pu 50
+    :units/N 3
+    :units/CH4 82
+    :credits 151}]])
+
+(format-stock-check (stock-check :tombaugh-resources :units/CH4))
+
+(format-stock-check (stock-check :blue-energy :units/CH4))
+
+(crux/submit-tx
+ crux
+ [[:crux.tx/cas
+   ;; Old doc
+   {:crux.db/id :gold-harmony
+    :company-name "Gold Harmony"
+    :seller? true
+    :buyer? false
+    :units/Au 10211
+    :credits 51}
+   ;; New doc
+   {:crux.db/id :gold-harmony
+    :company-name "Gold Harmony"
+    :seller? true
+    :buyer? false
+    :units/Au 211
+    :credits 51}]
+
+  [:crux.tx/cas
+   ;; Old doc
+   {:crux.db/id :encompass-trade
+    :company-name "Encompass Trade"
+    :seller? true
+    :buyer? true
+    :units/Au 10
+    :units/Pu 5
+    :units/CH4 211
+    :credits 100002}
+   ;; New doc
+   {:crux.db/id :encompass-trade
+    :company-name "Encompass Trade"
+    :seller? true
+    :buyer? true
+    :units/Au 10010
+    :units/Pu 5
+    :units/CH4 211
+    :credits 1002}]])
+
+(format-stock-check (stock-check :gold-harmony :units/Au))
+
+(format-stock-check (stock-check :encompass-trade :units/Au))
+
+(crux/submit-tx
+ crux
+ [[:crux.tx/put
+   (assoc manifest :badges ["SETUP" "PUT" "DATALOG-QUERIES" "BITEMP" "CAS"])]])
+
+(crux/q (crux/db crux)
+        {:find '[belongings]
+         :where '[[e :cargo belongings]]
+         :args [{'belongings "secret note"}]})
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
