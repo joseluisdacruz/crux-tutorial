@@ -436,6 +436,11 @@
  (crux/new-snapshot (crux/db crux #inst "2116-01-01T09"))
  :kaarlang/clients)
 
+(crux/submit-tx crux
+                [[:crux.tx/delete :kaarlang/clients #inst "2110-01-01" #inst "2116-01-01"]])
+
+(crux/entity (crux/db crux) :kaarlang/clients)
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
