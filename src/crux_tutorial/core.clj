@@ -39,6 +39,62 @@
                    :density 0.717
                    :radioactive false}]])
 
+#_(crux/submit-tx crux
+                [[:crux.tx/put
+                  {:crux.db/id :stock/Pu
+                   :commod :commodity/Pu
+                   :weight-ton 21}
+                  #inst "2115-02-13T18"] ;; valid-time
+
+                 [:crux.tx/put
+                  {:crux.db/id :stock/Pu
+                   :commod :commodity/Pu
+                   :weight-ton 23}
+                  #inst "2115-02-14T18"]
+
+                 [:crux.tx/put
+                  {:crux.db/id :stock/Pu
+                   :commod :commodity/Pu
+                   :weight-ton 22.2}
+                  #inst "2115-02-15T18"]
+
+                 [:crux.tx/put
+                  {:crux.db/id :stock/Pu
+                   :commod :commodity/Pu
+                   :weight-ton 24}
+                  #inst "2115-02-18T18"]
+
+                 [:crux.tx/put
+                  {:crux.db/id :stock/Pu
+                   :commod :commodity/Pu
+                   :weight-ton 24.9}
+                  #inst "2115-02-19T18"]])
+
+#_(crux/submit-tx crux
+                [[:crux.tx/put
+                  {:crux.db/id :stock/N
+                   :commod :commodity/N
+                   :weight-ton 3}
+                  #inst "2115-02-13T18" ;; start valid-time
+                  #inst "2115-02-19T18"] ;; end valid-time
+
+                 [:crux.tx/put
+                  {:crux.db/id :stock/CH4
+                   :commod :commodity/CH4
+                   :weight-ton 92}
+                  #inst "2115-02-15T18"
+                  #inst "2115-02-19T18"]])
+
+(defn easy-ingest
+  "Uses Crux put transaction to add a vector of documents to a specified node"
+  [node docs]
+  (crux/submit-tx node
+                  (vec (for [doc docs]
+                         [:crux.tx/put doc]))))
+                         
+
+(crux/entity (crux/db crux #inst "2115-02-14") :stock/N)
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
