@@ -410,6 +410,32 @@
          :where '[[e :cargo belongings]]
          :args [{'belongings "secret note"}]})
 
+(crux/submit-tx crux
+                [[:crux.tx/put {:crux.db/id :kaarlang/clients
+                                :clients [:encompass-trade]}
+                  #inst "2110-01-01T09"
+                  #inst "2111-01-01T09"]
+
+                 [:crux.tx/put {:crux.db/id :kaarlang/clients
+                                :clients [:encompass-trade :blue-energy]}
+                  #inst "2111-01-01T09"
+                  #inst "2113-01-01T09"]
+
+                 [:crux.tx/put {:crux.db/id :kaarlang/clients
+                                :clients [:blue-energy]}
+                  #inst "2113-01-01T09"
+                  #inst "2114-01-01T09"]
+
+                 [:crux.tx/put {:crux.db/id :kaarlang/clients
+                                :clients [:blue-energy :gold-harmony :tombaugh-resources]}
+                  #inst "2114-01-01T09"
+                  #inst "2115-01-01T09"]])
+
+(crux/history-ascending
+ (crux/db crux)
+ (crux/new-snapshot (crux/db crux #inst "2116-01-01T09"))
+ :kaarlang/clients)
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
