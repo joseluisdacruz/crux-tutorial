@@ -436,10 +436,82 @@
  (crux/new-snapshot (crux/db crux #inst "2116-01-01T09"))
  :kaarlang/clients)
 
-(crux/submit-tx crux
+#_(crux/submit-tx crux
                 [[:crux.tx/delete :kaarlang/clients #inst "2110-01-01" #inst "2116-01-01"]])
 
-(crux/entity (crux/db crux) :kaarlang/clients)
+(crux/entity (crux/db crux #inst "2115-01-01") :kaarlang/clients)
+
+(crux/submit-tx crux
+                [[:crux.tx/put
+                  {:crux.db/id :person/kaarlang
+                   :full-name "Kaarlang"
+                   :origin-planet "Mars"
+                   :identity-tag :KA01299242093
+                   :DOB #inst "2040-11-23"}]
+
+                 [:crux.tx/put
+                  {:crux.db/id :person/ilex
+                   :full-name "Ilex Jefferson"
+                   :origin-planet "Venus"
+                   :identity-tag :IJ01222212454
+                   :DOB #inst "2061-02-17"}]
+
+                 [:crux.tx/put
+                  {:crux.db/id :person/thadd
+                   :full-name "Thad Christover"
+                   :origin-moon "Titan"
+                   :identity-tag :IJ01222212454
+                   :DOB #inst "2101-01-01"}]
+
+                 [:crux.tx/put
+                  {:crux.db/id :person/johanna
+                   :full-name "Johanna"
+                   :origin-planet "Earth"
+                   :identity-tag :JA012992129120
+                   :DOB #inst "2090-12-07"}]])
+
+(defn full-query
+  [node]
+  (crux/q
+   (crux/db node)
+   '{:find [id]
+     :where [[e :crux.db/id id]]
+     :full-results? true}))
+
+(full-query crux)
+
+(crux/submit-tx crux
+                [[:crux.tx/evict
+                  :person/kaarlang]
+                 [:crux.tx/evict
+                  :person/ilex
+                  #inst "2000-01-01"]
+                 [:crux.tx/evict
+                  :person/thadd
+                  #inst "2000-01-01"
+                  #inst "2500-01-01"]
+                 [:crux.tx/evict
+                  :person/johanna
+                  #inst "2000-01-01"
+                  #inst "2500-01-01"
+                  false
+                  false]])
+
+(crux/history-descending (crux/db crux)
+                         (crux/new-snapshot (crux/db crux))
+                         :person/kaarlang)
+
+(crux/history-descending (crux/db crux)
+                         (crux/new-snapshot (crux/db crux))
+                         :person/ilex)
+
+(crux/history-descending (crux/db crux)
+                         (crux/new-snapshot (crux/db crux))
+                         :person/thadd)
+
+(crux/history-descending (crux/db crux)
+                         (crux/new-snapshot (crux/db crux))
+                         :person/johanna)
 
 (defn -main
   "I don't do a whole lot ... yet."
